@@ -1,1 +1,1 @@
-# AWS-CDK-playground
+# AWS CDK playground
