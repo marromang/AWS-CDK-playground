@@ -1,1 +1,2 @@
-# AWS CDK playground
+# AWS playground repo
+
