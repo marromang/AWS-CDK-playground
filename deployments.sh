@@ -8,12 +8,13 @@
 REPO_NAME=$1
 SERVICE=$2
 PARAMETERS_FILE=$3
+ACTION=$4
 # system parameters
-TEMPLATE_PATH="xxx"
-PARAMETERS_PATH="xxx"
+TEMPLATE_PATH="xyz"
+PARAMETERS_PATH="xyz"
 
 # command line parameters check
-if [[ -z "$REPO_NAME" || -z "$SERVICE" || -z "$PARAMETERS_FILE" ]]; then
+if [[ -z "$REPO_NAME" || -z "$SERVICE" || -z "$PARAMETERS_FILE" || -z "$ACTION" ]]; then
     echo "Invalid parameters."
     echo "Usage: bash deployments.sh repo_name service parameters_file"
 # path completion for each service
@@ -38,5 +39,5 @@ else
         PARAMS_FILE=$PARAMETERS_PATH/cloudfront/$PARAMETERS_FILE
     fi
     # deployment execution
-    aws cloudformation create-stack  --stack-name pro-$REPO_NAME-$SERVICE-cf --template-body file://$TEMPLATE_PATH --parameters file://$PARAMETERS_PATH --profile sd  --capabilities CAPABILITY_NAMED_IAM
+    aws cloudformation $ACTION-stack  --stack-name pro-$REPO_NAME-$SERVICE-cf --template-body file://$TEMPLATE_FILE --parameters file://$PARAMS_FILE --profile sd  --capabilities CAPABILITY_NAMED_IAM
 fi
