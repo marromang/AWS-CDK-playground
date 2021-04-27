@@ -5,25 +5,28 @@
 # Script to deploy via aws cli some AWS services: S3, EFS, CodeBuild, CodePipeline, Elastic Beanstalk, CloudFront
 
 # CLI parameters
-REPO_NAME=$1
-SERVICE=$2
-PARAMETERS_FILE=$3
-ACTION=$4
-# system parameters
-TEMPLATE_PATH="xyz"
-PARAMETERS_PATH="xyz"
+ACTION=$1
+SITE=$2
+SERVICE=$3
+ENV=$4
 
+# system parameters
+TEMPLATE_PATH=xyz
+PARAMETERS_PATH=zyx<$ENV
+REPO_NAME=$SITE-code 
+PARAMETERS_FILE=$SITE.json
 # command line parameters check
-if [[ -z "$REPO_NAME" || -z "$SERVICE" || -z "$PARAMETERS_FILE" || -z "$ACTION" ]]; then
+
+if [[ -z "$SITE" || -z "$SERVICE" || -z "$ACTION" || -z "$ENV" ]]; then
     echo "Invalid parameters."
-    echo "Usage: bash deployments.sh repo_name service parameters_file"
+    echo "Usage: bash deploy action site service environment"
 # path completion for each service
 else
 
     if [ $ACTION == "status" ]; then  
-        aws cloudformation describe-stacks --stack-name pro-$REPO_NAME-$SERVICE-cf --query Stacks[*].StackStatus | cut -d " " -f2
+        aws cloudformation describe-stacks --stack-name $ENV-$REPO_NAME-$SERVICE-cf --query Stacks[*].StackStatus | cut -d " " -f2
     elif [ $ACTION == "delete" ]; then 
-        aws cloudformation delete-stack --stack-name pro-$REPO_NAME-$SERVICE-cf
+        aws cloudformation delete-stack --stack-name $ENV-$REPO_NAME-$SERVICE-cf
     else
         if [ $SERVICE == "S3" ]; then
             TEMPLATE_FILE=$TEMPLATE_PATH/20-create-S3.yaml
@@ -43,8 +46,11 @@ else
         elif [ $SERVICE == "CFR" ]; then
             TEMPLATE_FILE=$TEMPLATE_PATH/50-CloudFront.yaml
             PARAMS_FILE=$PARAMETERS_PATH/cloudfront/$PARAMETERS_FILE
+        elif [ $SERVICE == "TF" ]; then
+            TEMPLATE_FILE=$TEMPLATE_PATH/80-User-TransferFamily.yaml
+            PARAMS_FILE=$PARAMETERS_PATH/transfer/$PARAMETERS_FILE
         fi
         # deployment execution
-        aws cloudformation $ACTION-stack  --stack-name pro-$REPO_NAME-$SERVICE-cf --template-body file://$TEMPLATE_FILE --parameters file://$PARAMS_FILE --profile sd  --capabilities CAPABILITY_NAMED_IAM
+        aws cloudformation $ACTION-stack  --stack-name $ENV-$REPO_NAME-$SERVICE-cf --template-body file://$TEMPLATE_FILE --parameters file://$PARAMS_FILE --profile sd  --capabilities CAPABILITY_NAMED_IAM
     fi
 fi
